@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -47,7 +48,7 @@ class UserController extends Controller
                 : 'https://placehold.co/200x200';
 
             $imageHtml = sprintf(
-                '<img src="%s" alt="%s" class="rounded w-200px h-200px object-cover">',
+                '<img src="%s" alt="%s" class="rounded object-cover" style="width: 200px; height: 200px;">',
                 e($imageUrl),
                 e($user->name)
             );
@@ -85,6 +86,28 @@ class UserController extends Controller
             'recordsTotal'    => $recordsTotal,
             'recordsFiltered' => $recordsFiltered,
             'data'            => $data,
+        ]);
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|unique:users,email',
+            'password' => 'required|string|min:6',
+            'image'    => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+        ]);
+
+        if ($request->hasFile('image')) {
+            $validated['image'] = $request->file('image')->store('users', 'public');
+        }
+
+        $validated['password'] = Hash::make($validated['password']);
+
+        User::create($validated);
+
+        return response()->json([
+            'message' => 'User berhasil ditambahkan!',
         ]);
     }
 }

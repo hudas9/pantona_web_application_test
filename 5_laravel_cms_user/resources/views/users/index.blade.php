@@ -175,7 +175,7 @@
         const addUserModal = new bootstrap.Modal(document.getElementById('addUserModal'));
         const editUserModal = new bootstrap.Modal(document.getElementById('editUserModal'));
 
-        $(function() {
+        $(document).ready(function() {
             tableUser = $('#tableUser').DataTable({
                 processing: true,
                 serverSide: true,
@@ -250,7 +250,7 @@
                 formData.append('image_profile', $('#addImage')[0].files[0]);
             }
 
-            const $btn = $('#btnSubmitAdd').prop('disabled', true).text('Menyimpan...');
+            $('#btnSubmitAdd').prop('disabled', true).text('Menyimpan...');
 
             $.ajax({
                 url: '{{ route('users.store') }}',
@@ -271,7 +271,7 @@
                     }
                 },
                 complete: function() {
-                    $btn.prop('disabled', false).text('Simpan');
+                    $('#btnSubmitAdd').prop('disabled', false).text('Simpan');
                 }
             });
         }
@@ -311,7 +311,7 @@
             }
             formData.append('_method', 'PUT');
 
-            const $btn = $('#btnSubmitEdit').prop('disabled', true).text('Menyimpan...');
+            $('#btnSubmitEdit').prop('disabled', true).text('Menyimpan...');
 
             $.ajax({
                 url: '/users/' + userId,
@@ -332,7 +332,7 @@
                     }
                 },
                 complete: function() {
-                    $btn.prop('disabled', false).text('Simpan Perubahan');
+                    $('#btnSubmitEdit').prop('disabled', false).text('Simpan Perubahan');
                 }
             });
         }
@@ -375,14 +375,25 @@
             }).then((result) => {
                 if (!result.isConfirmed) return;
 
+                $('#logoutButton').prop('disabled', true).text('Logging out...');
+
                 $.ajax({
                     url: '{{ route('logout') }}',
                     method: 'POST',
                     success: function() {
-                        window.location.href = '{{ route('login') }}';
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil Logout',
+                            text: 'Anda telah keluar dari sistem.',
+                        }).then(() => {
+                            window.location.href = '{{ route('login') }}';
+                        });
                     },
                     error: function() {
                         toast('error', 'Terjadi kesalahan saat logout.');
+                    },
+                    complete: function() {
+                        $('#logoutButton').prop('disabled', false).text('Logout');
                     }
                 });
             });

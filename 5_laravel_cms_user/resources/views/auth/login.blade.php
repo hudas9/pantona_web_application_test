@@ -22,7 +22,7 @@
                     <h1 class="h3 mb-1">CMS User</h1>
                 </div>
 
-                <form id="loginForm" onsubmit="event.preventDefault(); login();">
+                <form id="loginForm">
                     <div class="mb-3">
                         <label for="email" class="form-label">Email</label>
                         <input type="email" id="email" class="form-control" placeholder="Masukkan email anda">
@@ -31,7 +31,7 @@
                         <label for="password" class="form-label">Password</label>
                         <input type="password" id="password" class="form-control" placeholder="Masukkan password anda">
                     </div>
-                    <button type="button" class="btn btn-primary w-100" onclick="login()">
+                    <button type="button" id="loginButton" class="btn btn-primary w-100">
                         Login
                     </button>
                 </form>
@@ -44,6 +44,16 @@
     </script>
 
     <script>
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+
+        $(document).ready(function() {
+            $('#loginButton').on('click', login);
+        });
+
         function login() {
             const email = $('#email').val().trim();
             const password = $('#password').val().trim();
@@ -57,15 +67,14 @@
                 return;
             }
 
-            $('button').prop('disabled', true).text('Memproses...');
+            $('#loginButton').prop('disabled', true).text('Memproses...');
 
             $.ajax({
-                url: '/login',
+                url: '{{ route('login') }}',
                 method: 'POST',
                 data: {
                     email: email,
-                    password: password,
-                    _token: '{{ csrf_token() }}'
+                    password: password
                 },
                 success: function(res) {
                     Swal.fire({
@@ -86,6 +95,9 @@
                         title: 'Login Gagal',
                         text: message,
                     });
+                },
+                complete: function() {
+                    $('#loginButton').prop('disabled', false).text('Login');
                 }
             });
         }

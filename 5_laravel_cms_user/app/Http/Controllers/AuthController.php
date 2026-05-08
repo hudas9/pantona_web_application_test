@@ -51,4 +51,17 @@ class AuthController extends Controller
             return back()->withErrors(['error' => 'Terjadi kesalahan']);
         }
     }
+
+    public function logout(Request $request)
+    {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Logout berhasil!'
+            ]);
+        }
+    }
 }

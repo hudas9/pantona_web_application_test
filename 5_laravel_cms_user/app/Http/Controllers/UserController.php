@@ -17,7 +17,7 @@ class UserController extends Controller
     {
         $sortableColumns = [
             0 => 'email',
-            1 => 'name',
+            1 => 'nama',
         ];
 
         $query = User::query();
@@ -26,7 +26,7 @@ class UserController extends Controller
         if ($search !== '') {
             $query->where(function ($q) use ($search) {
                 $q->where('email', 'like', "%{$search}%")
-                    ->orWhere('name',  'like', "%{$search}%");
+                    ->orWhere('nama',  'like', "%{$search}%");
             });
         }
 
@@ -43,22 +43,22 @@ class UserController extends Controller
         $users  = $query->skip($start)->take($length)->get();
 
         $data = $users->map(function (User $user) {
-            $imageUrl = $user->image
-                ? asset('storage/' . $user->image)
+            $imageUrl = $user->image_profile
+                ? asset('storage/' . $user->image_profile)
                 : 'https://placehold.co/200x200';
 
             $imageHtml = sprintf(
                 '<img src="%s" alt="%s" class="rounded object-cover" style="width: 200px; height: 200px;">',
                 e($imageUrl),
-                e($user->name)
+                e($user->nama)
             );
 
             $actionHtml = sprintf(
                 '<div class="d-flex gap-2 justify-content-center">
                     <button class="btn-edit btn btn-md btn-warning"
                         data-id="%d"
-                        data-name="%s"
                         data-email="%s"
+                        data-name="%s"
                         data-image="%s">
                         <i class="fa-solid fa-pen-to-square"></i> Edit
                     </button>
@@ -68,15 +68,15 @@ class UserController extends Controller
                     </button>
                 </div>',
                 $user->id,
-                e($user->name),
                 e($user->email),
+                e($user->nama),
                 e($imageUrl),
                 $user->id
             );
 
             return [
                 'email'  => e($user->email),
-                'name'   => e($user->name),
+                'nama'   => e($user->nama),
                 'image'  => $imageHtml,
                 'action' => $actionHtml,
             ];
@@ -92,14 +92,14 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name'     => 'required|string|max:255',
             'email'    => 'required|email|unique:users,email',
+            'nama'     => 'required|string|max:255',
             'password' => 'required|string|min:6',
-            'image'    => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'image_profile'    => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
 
-        if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('users', 'public');
+        if ($request->hasFile('image_profile')) {
+            $validated['image_profile'] = $request->file('image_profile')->store('users', 'public');
         }
 
         $validated['password'] = Hash::make($validated['password']);

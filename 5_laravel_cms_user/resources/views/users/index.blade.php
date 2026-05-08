@@ -62,16 +62,16 @@
                 <div class="modal-body">
                     <form id="formAddUser">
                         <div class="mb-3">
-                            <label for="addNama" class="form-label">Nama <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="addNama" name="name"
-                                placeholder="Masukkan nama lengkap">
-                            <div class="invalid-feedback" id="errorAddNama"></div>
-                        </div>
-                        <div class="mb-3">
                             <label for="addEmail" class="form-label">Email <span class="text-danger">*</span></label>
                             <input type="email" class="form-control" id="addEmail" name="email"
                                 placeholder="email@contoh.com">
                             <div class="invalid-feedback" id="errorAddEmail"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="addNama" class="form-label">Nama <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="addNama" name="nama"
+                                placeholder="Masukkan nama lengkap">
+                            <div class="invalid-feedback" id="errorAddNama"></div>
                         </div>
                         <div class="mb-3">
                             <label for="addPassword" class="form-label">Password <span
@@ -82,7 +82,7 @@
                         </div>
                         <div class="mb-3">
                             <label for="addImage" class="form-label">Foto Profil</label>
-                            <input type="file" class="form-control" id="addImage" name="image"
+                            <input type="file" class="form-control" id="addImage" name="image_profile"
                                 accept="image/jpeg,image/png,image/jpg,image/webp">
                             <div class="invalid-feedback" id="errorAddImage"></div>
                         </div>
@@ -139,8 +139,8 @@
                         className: 'text-center'
                     },
                     {
-                        data: 'name',
-                        name: 'name',
+                        data: 'nama',
+                        name: 'nama',
                         className: 'text-center'
                     },
                     {
@@ -170,16 +170,18 @@
         });
 
         function submitAddUser() {
+            clearErrors('Add');
+
             const nama = $('#addNama').val().trim();
             const email = $('#addEmail').val().trim();
             const password = $('#addPassword').val();
 
             const formData = new FormData();
-            formData.append('name', nama);
+            formData.append('nama', nama);
             formData.append('email', email);
             formData.append('password', password);
             if ($('#addImage')[0].files[0]) {
-                formData.append('image', $('#addImage')[0].files[0]);
+                formData.append('image_profile', $('#addImage')[0].files[0]);
             }
 
             const $btn = $('#btnSubmitAdd').prop('disabled', true).text('Menyimpan...');
@@ -194,7 +196,6 @@
                     addUserModal.hide();
                     tableUser.ajax.reload(null, false);
                     toast('success', res.message);
-                    console.log(res.message);
                 },
                 error: function(xhr) {
                     if (xhr.status === 422) {
@@ -247,10 +248,10 @@
 
         function displayErrors(errors, prefix) {
             const fieldMap = {
-                name: 'Nama',
+                nama: 'Nama',
                 email: 'Email',
                 password: 'Password',
-                image: 'Image'
+                image_profile: 'Image'
             };
 
             $.each(errors, function(field, messages) {
@@ -263,8 +264,13 @@
         }
 
         function clearErrors(prefix) {
-            $('#form' + prefix + 'User').find('.is-invalid').removeClass('is-invalid');
-            $('[id^="error' + prefix + '"]').text('');
+            const fields = ['Nama', 'Email', 'Password', 'Image'];
+            fields.forEach(field => {
+                const inputId = '#' + prefix.toLowerCase() + field;
+                const errorId = '#error' + prefix + field;
+                $(inputId).removeClass('is-invalid');
+                $(errorId).text('');
+            });
         }
 
         function toast(icon, title) {

@@ -139,4 +139,17 @@ class UserController extends Controller
             'message' => 'User berhasil diubah!',
         ]);
     }
+
+    public function destroy(User $user)
+    {
+        if ($user->image_profile) {
+            Storage::disk('public')->delete($user->image_profile);
+        }
+
+        $user->delete();
+
+        return response()->json([
+            'message' => 'User berhasil dihapus!',
+        ]);
+    }
 }

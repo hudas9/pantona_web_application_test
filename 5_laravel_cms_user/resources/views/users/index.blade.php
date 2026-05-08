@@ -231,6 +231,8 @@
             $('#tableUser').on('click', '.btn-edit', openEditModal);
 
             $('#btnSubmitEdit').on('click', submitEditUser);
+
+            $('#tableUser').on('click', '.btn-delete', deleteUser);
         });
 
         function submitAddUser() {
@@ -332,6 +334,33 @@
                 complete: function() {
                     $btn.prop('disabled', false).text('Simpan Perubahan');
                 }
+            });
+        }
+
+        function deleteUser() {
+            const userId = $(this).data('id');
+
+            Swal.fire({
+                title: 'Hapus User?',
+                text: 'Data yang dihapus tidak dapat dikembalikan.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Hapus!',
+                cancelButtonText: 'Batal',
+            }).then((result) => {
+                if (!result.isConfirmed) return;
+
+                $.ajax({
+                    url: '/users/' + userId,
+                    method: 'DELETE',
+                    success: function(res) {
+                        tableUser.ajax.reload(null, false);
+                        toast('success', res.message);
+                    },
+                    error: function(xhr) {
+                        toast('error', xhr.responseJSON?.message || 'Gagal menghapus user.');
+                    }
+                });
             });
         }
 

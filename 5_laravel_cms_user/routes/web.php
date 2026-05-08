@@ -21,4 +21,5 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
+    Route::get('/users/datatable', [UserController::class, 'datatable'])->name('users.datatable');
 });

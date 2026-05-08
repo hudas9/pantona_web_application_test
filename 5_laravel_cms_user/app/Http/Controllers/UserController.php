@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
@@ -108,6 +109,34 @@ class UserController extends Controller
 
         return response()->json([
             'message' => 'User berhasil ditambahkan!',
+        ]);
+    }
+
+    public function update(Request $request, User $user)
+    {
+        $validated = $request->validate([
+            'nama'     => 'required|string|max:255',
+            'password' => 'nullable|string|min:6',
+            'image_profile' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+        ]);
+
+        if ($request->hasFile('image_profile')) {
+            if ($user->image_profile) {
+                Storage::disk('public')->delete($user->image_profile);
+            }
+            $validated['image_profile'] = $request->file('image_profile')->store('users', 'public');
+        }
+
+        if (!empty($validated['password'])) {
+            $validated['password'] = Hash::make($validated['password']);
+        } else {
+            unset($validated['password']);
+        }
+
+        $user->update($validated);
+
+        return response()->json([
+            'message' => 'User berhasil diubah!',
         ]);
     }
 }

@@ -103,6 +103,61 @@
         </div>
     </div>
 
+    <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editUserModalLabel">
+                        <i class="fa-solid fa-pen-to-square me-1"></i> Edit User
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formEditUser">
+                        <input type="hidden" id="editUserId">
+                        <div class="mb-3">
+                            <label for="editEmail" class="form-label">Email <span class="text-muted"
+                                    style="font-size:0.85rem;">(tidak dapat diubah)</span></label>
+                            <input type="email" class="form-control" id="editEmail" readonly disabled>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editNama" class="form-label">Nama <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="editNama" name="nama"
+                                placeholder="Masukkan nama lengkap">
+                            <div class="invalid-feedback" id="errorEditNama"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editPassword" class="form-label">Password <span class="text-muted"
+                                    style="font-size:0.85rem;">(kosongkan jika tidak diubah)</span></label>
+                            <input type="password" class="form-control" id="editPassword" name="password"
+                                placeholder="Password baru (opsional)">
+                            <div class="invalid-feedback" id="errorEditPassword"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editImage" class="form-label">Foto Profil <span class="text-muted"
+                                    style="font-size:0.85rem;">(kosongkan jika tidak diubah)</span></label>
+                            <input type="file" class="form-control" id="editImage" name="image_profile"
+                                accept="image/jpeg,image/png,image/jpg,image/webp">
+                            <div class="invalid-feedback" id="errorEditImage"></div>
+                        </div>
+                        <div id="editImagePreview" class="mb-2">
+                            <p class="fw-semibold small mb-1">Foto Saat Ini:</p>
+                            <img id="editPreviewImg" src="" alt="preview" class="img-thumbnail"
+                                style="width:150px;height:150px;object-fit:cover;">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="btnSubmitEdit">
+                        <i class="fa-solid fa-floppy-disk me-1"></i> Simpan Perubahan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous">
     </script>
@@ -118,6 +173,7 @@
 
         let tableUser;
         const addUserModal = new bootstrap.Modal(document.getElementById('addUserModal'));
+        const editUserModal = new bootstrap.Modal(document.getElementById('editUserModal'));
 
         $(function() {
             tableUser = $('#tableUser').DataTable({
@@ -164,9 +220,17 @@
                 previewImage(this, '#addPreviewImg', '#addImagePreview');
             });
 
+            $('#editImage').on('change', function() {
+                previewImage(this, '#editPreviewImg', '#editImagePreview');
+            });
+
             document.getElementById('addUserModal').addEventListener('show.bs.modal', clearAddForm);
 
             $('#btnSubmitAdd').on('click', submitAddUser);
+
+            $('#tableUser').on('click', '.btn-edit', openEditModal);
+
+            $('#btnSubmitEdit').on('click', submitEditUser);
         });
 
         function submitAddUser() {
@@ -206,6 +270,67 @@
                 },
                 complete: function() {
                     $btn.prop('disabled', false).text('Simpan');
+                }
+            });
+        }
+
+        function openEditModal() {
+            const $btn = $(this);
+            const userId = $btn.data('id');
+            const userEmail = $btn.data('email');
+            const userName = $btn.data('name');
+            const userImage = $btn.data('image');
+
+            $('#editUserId').val(userId);
+            $('#editEmail').val(userEmail);
+            $('#editNama').val(userName);
+            $('#editPassword').val('');
+            $('#editImage').val('');
+            $('#editPreviewImg').attr('src', userImage);
+
+            clearErrors('Edit');
+            editUserModal.show();
+        }
+
+        function submitEditUser() {
+            clearErrors('Edit');
+
+            const userId = $('#editUserId').val();
+            const nama = $('#editNama').val().trim();
+            const password = $('#editPassword').val();
+
+            const formData = new FormData();
+            formData.append('nama', nama);
+            if (password) {
+                formData.append('password', password);
+            }
+            if ($('#editImage')[0].files[0]) {
+                formData.append('image_profile', $('#editImage')[0].files[0]);
+            }
+            formData.append('_method', 'PUT');
+
+            const $btn = $('#btnSubmitEdit').prop('disabled', true).text('Menyimpan...');
+
+            $.ajax({
+                url: '/users/' + userId,
+                method: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(res) {
+                    editUserModal.hide();
+                    tableUser.ajax.reload(null, false);
+                    toast('success', res.message);
+                },
+                error: function(xhr) {
+                    if (xhr.status === 422) {
+                        displayErrors(xhr.responseJSON.errors, 'Edit');
+                    } else {
+                        toast('error', xhr.responseJSON?.message || 'Gagal mengubah user.');
+                    }
+                },
+                complete: function() {
+                    $btn.prop('disabled', false).text('Simpan Perubahan');
                 }
             });
         }

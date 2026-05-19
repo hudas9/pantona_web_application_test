@@ -13,6 +13,24 @@
     <script src="https://kit.fontawesome.com/4530e241c6.js" crossorigin="anonymous"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        .password-wrapper {
+            position: relative;
+        }
+
+        .toggle-password {
+            position: absolute;
+            top: 50%;
+            right: 15px;
+            transform: translateY(-50%);
+            cursor: pointer;
+        }
+
+        .password-input {
+            padding-right: 45px;
+        }
+    </style>
 </head>
 
 <body>
@@ -31,9 +49,12 @@
                     </div>
                     <div class="mb-4">
                         <label for="password" class="form-label">Password</label>
-                        <input type="password" id="password" class="form-control" placeholder="Masukkan password anda">
-                        <i class="fa-solid fa-eye"></i>
-                        <i class="fa-solid fa-eye-slash"></i>
+                        <div class="password-wrapper">
+                            <input type="password" id="password" class="form-control password-input"
+                                placeholder="Masukkan password anda">
+                            <i class="fa-solid fa-eye toggle-password" id="togglePassword"></i>
+                        </div>
+
                     </div>
                     <button type="button" id="loginButton" class="btn btn-primary w-100">
                         Login
@@ -55,63 +76,56 @@
         });
 
         $(document).ready(function() {
-            $('#loginButton').on('click', login);
-        });
+                    $('#loginButton').on('click', login);
+                    $('#toggle-toggle').on('click', showHidePassword);
 
-        function login() {
-            const email = $('#email').val().trim();
-            const password = $('#password').val().trim();
+                    function login() {
+                        const email = $('#email').val().trim();
+                        const password = $('#password').val().trim();
 
-            if (!email || !password) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Peringatan',
-                    text: 'Email dan password harus diisi!',
-                });
-                return;
-            }
+                        if (!email || !password) {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Peringatan',
+                                text: 'Email dan password harus diisi!',
+                            });
+                            return;
+                        }
 
-            $('#loginButton').prop('disabled', true).text('Memproses...');
+                        $('#loginButton').prop('disabled', true).text('Memproses...');
 
-            $.ajax({
-                url: '{{ route('login') }}',
-                method: 'POST',
-                data: {
-                    email: email,
-                    password: password
-                },
-                success: function(res) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Sukses!',
-                        text: res.message,
-                    }).then(() => {
-                        window.location.href = '/users';
-                    });
-                },
-                error: function(xhr) {
-                    let message = 'Terjadi kesalahan';
-                    if (xhr.responseJSON && xhr.responseJSON.message) {
-                        message = xhr.responseJSON.message;
-                    }
+                        $.ajax({
+                            url: '{{ route('login') }}',
+                            method: 'POST',
+                            data: {
+                                email: email,
+                                password: password
+                            },
+                            success: function(res) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Sukses!',
+                                    text: res.message,
+                                }).then(() => {
+                                    window.location.href = '/users';
+                                });
+                            },
+                            error: function(xhr) {
+                                let message = 'Terjadi kesalahan';
+                                if (xhr.responseJSON && xhr.responseJSON.message) {
+                                    message = xhr.responseJSON.message;
+                                }
 
-                    console.log(message);
-                    $('#email').addClass('is-invalid');
-                    $('#errorEmail').text(message);
-                },
-                complete: function() {
-                    $('#loginButton').prop('disabled', false).text('Login');
+                                console.log(message);
+                                $('#email').addClass('is-invalid');
+                                $('#errorEmail').text(message);
+                            },
+                            complete: function() {
+                                $('#loginButton').prop('disabled', false).text('Login');
+                            }
+                        });
+                    )
                 }
-            });
-        }
-
-        function showPassword() {
-
-        }
-
-        function hidePassword() {
-
-        }
     </script>
 
 </body>

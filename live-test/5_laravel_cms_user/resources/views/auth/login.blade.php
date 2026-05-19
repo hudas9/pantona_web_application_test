@@ -74,7 +74,6 @@
             $('#loginButton').prop('disabled', true).text('Memproses...');
 
             $.ajax({
-                8 t
                 url: '{{ route('login') }}',
                 method: 'POST',
                 data: {
@@ -95,13 +94,23 @@
                     if (xhr.responseJSON && xhr.responseJSON.message) {
                         message = xhr.responseJSON.message;
                     }
+
                     console.log(message);
-                    $('#errorEmail').
+                    $('#email').addClass('is-invalid');
+                    $('#errorEmail').text(message);
                 },
                 complete: function() {
                     $('#loginButton').prop('disabled', false).text('Login');
                 }
             });
+        }
+
+        function showPassword() {
+
+        }
+
+        function hidePassword() {
+
         }
     </script>
 
